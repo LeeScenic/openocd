@@ -15,6 +15,7 @@
 #include "configuration.h"
 #include "log.h"
 #include "command.h"
+#include "vfs_memory.h"
 
 #include <getopt.h>
 
@@ -44,6 +45,7 @@ static const struct option long_options[] = {
 	{"search",		required_argument,		NULL,			's'},
 	{"log_output",	required_argument,		NULL,			'l'},
 	{"command",		required_argument,		NULL,			'c'},
+	{"directory-to-memory",	required_argument,		NULL,			'D'},
 	{NULL, 0, NULL, 0}
 };
 
@@ -270,7 +272,7 @@ int parse_cmdline_args(struct command_context *cmd_ctx, int argc, char *argv[])
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long(argc, argv, "hvd::l:f:s:c:", long_options, &option_index);
+		c = getopt_long(argc, argv, "hvd::l:f:s:c:D:", long_options, &option_index);
 
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -312,6 +314,18 @@ int parse_cmdline_args(struct command_context *cmd_ctx, int argc, char *argv[])
 		case 'c':		/* --command | -c */
 			add_config_command(optarg);
 			break;
+		case 'D':		/* --directory-to-memory | -D */
+			/* Initialize VFS if not already done */
+			if (vfs_memory_init() != 0) {
+				LOG_ERROR("Failed to initialize memory VFS");
+				return ERROR_FAIL;
+			}
+			/* Load directory into memory */
+			if (vfs_memory_load_directory(optarg) != 0) {
+				LOG_ERROR("Failed to load directory into memory: %s", optarg);
+				return ERROR_FAIL;
+			}
+			break;
 		default:  /* '?' */
 			/* getopt will emit an error message, all we have to do is bail. */
 			return ERROR_FAIL;
@@ -334,6 +348,7 @@ int parse_cmdline_args(struct command_context *cmd_ctx, int argc, char *argv[])
 		LOG_OUTPUT("             | -d<n>\tset debug level to <level>\n");
 		LOG_OUTPUT("--log_output | -l\tredirect log output to file <name>\n");
 		LOG_OUTPUT("--command    | -c\trun <command>\n");
+		LOG_OUTPUT("--directory-to-memory | -D\tload directory into memory VFS for script protection\n");
 		exit(0);
 	}
 

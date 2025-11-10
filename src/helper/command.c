@@ -26,6 +26,8 @@
 #include "log.h"
 #include "time_support.h"
 #include "jim-eventloop.h"
+#include "vfs_memory.h"
+#include "jim_source_hook.h"
 
 /* nice short description of source file */
 #define __THIS__FILE__ "command.c"
@@ -1164,6 +1166,9 @@ struct command_context *command_init(const char *startup_tcl, Jim_Interp *interp
 
 	register_commands(context, NULL, command_builtin_handlers);
 
+	/* Install VFS hook for 'source' command if VFS is initialized */
+	jim_source_hook_install(interp);
+
 	Jim_SetAssocData(interp, "context", NULL, context);
 	if (Jim_Eval_Named(interp, startup_tcl, "embedded:startup.tcl", 1) == JIM_ERR) {
 		LOG_ERROR("Failed to run startup.tcl (embedded into OpenOCD)");
@@ -1180,6 +1185,9 @@ void command_exit(struct command_context *context)
 {
 	if (!context)
 		return;
+
+	/* Cleanup VFS before freeing interpreter */
+	vfs_memory_cleanup();
 
 	Jim_FreeInterp(context->interp);
 	free(context->help_list);

@@ -15,6 +15,7 @@
 #include "configuration.h"
 #include "log.h"
 #include "replacements.h"
+#include "vfs_memory.h"
 
 static size_t num_config_files;
 static char **config_file_names;
@@ -66,10 +67,29 @@ char *find_file(const char *file)
 	char const *mode = "r";
 	char *full_path;
 
+	/* First, check if file exists in memory VFS */
+	if (vfs_memory_file_exists(file)) {
+		LOG_DEBUG("found %s in memory VFS", file);
+		return strdup(file);
+	}
+
 	/* Check absolute and relative to current working dir first.
 	 * This keeps full_path reporting belowing working. */
 	full_path = alloc_printf("%s", file);
 	fp = fopen(full_path, mode);
+
+	/* If file opened successfully, return */
+	if (fp) {
+		fclose(fp);
+		LOG_DEBUG("found %s", full_path);
+		return full_path;
+	}
+
+	/* Check in memory VFS with full path */
+	if (vfs_memory_file_exists(full_path)) {
+		LOG_DEBUG("found %s in memory VFS", full_path);
+		return full_path;
+	}
 
 	if (script_search_dirs)
 		while (!fp) {
@@ -81,6 +101,13 @@ char *find_file(const char *file)
 				break;
 
 			full_path = alloc_printf("%s/%s", dir, file);
+
+			/* Check memory VFS first */
+			if (vfs_memory_file_exists(full_path)) {
+				LOG_DEBUG("found %s in memory VFS", full_path);
+				return full_path;
+			}
+
 			fp = fopen(full_path, mode);
 		}
 
