@@ -350,14 +350,39 @@ static int vfs_load_file_from_disk(const char *file_path, const char *base_path)
 	if (base_path) {
 		size_t base_len = strlen(base_path);
 		if (strncmp(file_path, base_path, base_len) == 0) {
-			virtual_path = file_path + base_len;
-			/* Skip leading slashes */
-			while (*virtual_path == '/' || *virtual_path == '\\')
-				virtual_path++;
+			/* Extract the directory name from base_path */
+			const char *dir_name = strrchr(base_path, '/');
+			if (!dir_name)
+				dir_name = strrchr(base_path, '\\');
+			if (!dir_name)
+				dir_name = base_path;
+			else
+				dir_name++;  /* Skip the slash */
+			
+			/* Get the relative path after base_path */
+			const char *rel_path = file_path + base_len;
+			while (*rel_path == '/' || *rel_path == '\\')
+				rel_path++;
+			
+			/* Build virtual path as: dir_name/rel_path */
+			size_t vpath_len = strlen(dir_name) + strlen(rel_path) + 2;
+			char *vpath = malloc(vpath_len);
+			if (vpath) {
+				snprintf(vpath, vpath_len, "%s/%s", dir_name, rel_path);
+				int result = vfs_memory_add_file(vpath, content, file_size);
+				free(vpath);
+				free(content);
+				return result;
+			} else {
+				free(content);
+				LOG_ERROR("Out of memory");
+				return -1;
+			}
 		}
 	}
 
-	int result = vfs_memory_add_file(virtual_path, content, file_size);
+	/* Fallback: use file_path as is */
+	int result = vfs_memory_add_file(file_path, content, file_size);
 	free(content);
 
 	return result;
