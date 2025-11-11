@@ -367,7 +367,7 @@ static int vfs_load_file_from_disk(const char *file_path, const char *base_path)
 			                       &decrypted, &decrypted_len) == 0) {
 				/* Decryption successful */
 				LOG_INFO("VFS: Successfully decrypted file: %s (%zu -> %zu bytes)",
-				         file_path, file_size, decrypted_len);
+				         file_path, (size_t)file_size, decrypted_len);
 				
 				/* Replace content with decrypted data */
 				free(content);
