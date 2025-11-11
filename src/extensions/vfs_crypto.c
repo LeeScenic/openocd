@@ -10,7 +10,7 @@
 #endif
 
 #include "vfs_crypto.h"
-#include "log.h"
+#include "../helper/log.h"
 #include "aes.h"
 
 #include <stdlib.h>

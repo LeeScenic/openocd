@@ -15,7 +15,7 @@
 #include "configuration.h"
 #include "log.h"
 #include "replacements.h"
-#include "vfs_memory.h"
+#include "../extensions/vfs_memory.h"
 
 static size_t num_config_files;
 static char **config_file_names;

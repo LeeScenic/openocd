@@ -11,7 +11,7 @@
 
 #include "jim_vfs_wrapper.h"
 #include "vfs_memory.h"
-#include "log.h"
+#include "../helper/log.h"
 #include <string.h>
 #include <stdlib.h>
 

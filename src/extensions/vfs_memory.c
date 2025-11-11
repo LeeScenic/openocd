@@ -11,7 +11,7 @@
 
 #include "vfs_memory.h"
 #include "vfs_crypto.h"
-#include "log.h"
+#include "../helper/log.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>

@@ -18,11 +18,6 @@ noinst_LTLIBRARIES += %D%/libhelper.la
 	%D%/jep106.c \
 	%D%/jim-nvp.c \
 	%D%/nvp.c \
-	%D%/vfs_memory.c \
-	%D%/vfs_crypto.c \
-	%D%/aes.c \
-	%D%/jim_source_hook.c \
-	%D%/jim_vfs_wrapper.c \
 	%D%/align.h \
 	%D%/base64.h \
 	%D%/binarybuffer.h \
@@ -44,12 +39,7 @@ noinst_LTLIBRARIES += %D%/libhelper.la
 	%D%/jep106.inc \
 	%D%/jim-nvp.h \
 	%D%/nvp.h \
-	%D%/compiler.h \
-	%D%/vfs_memory.h \
-	%D%/vfs_crypto.h \
-	%D%/aes.h \
-	%D%/jim_source_hook.h \
-	%D%/jim_vfs_wrapper.h
+	%D%/compiler.h
 
 STARTUP_TCL_SRCS += %D%/startup.tcl
 EXTRA_DIST += \

@@ -63,7 +63,8 @@ endif
 	%D%/server/libserver.la \
 	%D%/rtos/librtos.la \
 	%D%/helper/libhelper.la \
-	%D%/rtt/librtt.la
+	%D%/rtt/librtt.la \
+	%D%/extensions/libextensions.la
 
 BIN2C = $(srcdir)/%D%/helper/bin2char.sh
 
@@ -85,6 +86,7 @@ CLEANFILES += %D%/startup_tcl.inc
 #	rm -f $(distdir)/%D%/startup_tcl.inc
 
 include %D%/helper/Makefile.am
+include %D%/extensions/Makefile.am
 include %D%/jtag/Makefile.am
 include %D%/transport/Makefile.am
 include %D%/xsvf/Makefile.am
