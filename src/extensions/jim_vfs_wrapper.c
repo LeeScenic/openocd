@@ -11,7 +11,7 @@
 
 #include "jim_vfs_wrapper.h"
 #include "vfs_memory.h"
-#include "../helper/log.h"
+#include <helper/log.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -74,7 +74,7 @@ int Jim_EvalFileGlobal_VFS(Jim_Interp *interp, const char *filename)
 			filename, content_size);
 
 		int savedepth = interp->framePtr->level;
-		Jim_Obj *prevScriptObj;
+		/* Jim_Obj *prevScriptObj; */ /* Deprecated in modern jimtcl */
 		int retcode;
 
 		Jim_Obj *scriptObj = Jim_NewStringObj(interp, content, content_size);
@@ -88,12 +88,13 @@ int Jim_EvalFileGlobal_VFS(Jim_Interp *interp, const char *filename)
 
 		/* Evaluate in global frame */
 		interp->framePtr = interp->topFramePtr;
-		prevScriptObj = interp->currentScriptObj;
-		interp->currentScriptObj = scriptObj;
+		/* Note: currentScriptObj is deprecated in modern jimtcl */
+		/* prevScriptObj = interp->currentScriptObj; */
+		/* interp->currentScriptObj = scriptObj; */
 
 		retcode = Jim_EvalObj(interp, scriptObj);
 
-		interp->currentScriptObj = prevScriptObj;
+		/* interp->currentScriptObj = prevScriptObj; */
 
 		/* Restore the original frame */
 		while (interp->framePtr->level != savedepth) {

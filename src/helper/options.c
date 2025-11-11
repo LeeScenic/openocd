@@ -15,8 +15,8 @@
 #include "configuration.h"
 #include "log.h"
 #include "command.h"
-#include "../extensions/vfs_memory.h"
-#include "../extensions/vfs_crypto.h"
+#include <extensions/vfs_memory.h>
+#include <extensions/vfs_crypto.h>
 
 #include <getopt.h>
 

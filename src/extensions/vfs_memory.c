@@ -11,7 +11,8 @@
 
 #include "vfs_memory.h"
 #include "vfs_crypto.h"
-#include "../helper/log.h"
+#include <helper/log.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -384,7 +385,6 @@ static int vfs_load_file_from_disk(const char *file_path, const char *base_path)
 	}
 
 	/* Calculate virtual path (relative to base_path) */
-	const char *virtual_path = file_path;
 	if (base_path) {
 		size_t base_len = strlen(base_path);
 		if (strncmp(file_path, base_path, base_len) == 0) {

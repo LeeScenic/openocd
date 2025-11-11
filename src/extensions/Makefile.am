@@ -18,4 +18,5 @@ noinst_LTLIBRARIES += %D%/libextensions.la
 	%D%/jim_vfs_wrapper.h
 
 # Make headers available to other modules
-%C%_libextensions_la_CPPFLAGS = -I$(top_srcdir)/src/helper
+# Note: We use += to append to AM_CPPFLAGS which already includes jimtcl paths
+%C%_libextensions_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/src

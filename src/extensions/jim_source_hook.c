@@ -11,7 +11,7 @@
 
 #include "jim_source_hook.h"
 #include "vfs_memory.h"
-#include "../helper/log.h"
+#include <helper/log.h>
 #include <string.h>
 
 /* Reference to the original Jim 'source' command */

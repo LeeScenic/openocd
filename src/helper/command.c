@@ -26,8 +26,8 @@
 #include "log.h"
 #include "time_support.h"
 #include "jim-eventloop.h"
-#include "../extensions/vfs_memory.h"
-#include "../extensions/jim_source_hook.h"
+#include <extensions/vfs_memory.h>
+#include <extensions/jim_source_hook.h>
 
 /* nice short description of source file */
 #define __THIS__FILE__ "command.c"

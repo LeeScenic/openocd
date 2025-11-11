@@ -10,9 +10,10 @@
 #endif
 
 #include "vfs_crypto.h"
-#include "../helper/log.h"
+#include <helper/log.h>
 #include "aes.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
