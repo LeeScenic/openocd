@@ -1,6 +1,6 @@
 1. 安装必要的依赖：
 # 安装 libusb 和其他必要的开发库
-sudo apt-get install libusb-1.0-0-dev libftdi1-dev libhidapi-dev libgpiod-dev
+sudo apt-get install libusb-1.0-0-dev libftdi1-dev libhidapi-dev libgpiod-dev libtool pkg-config make git autoconf automake
 
 2. 配置和编译 jimtcl 子模块
 cd jimtcl
