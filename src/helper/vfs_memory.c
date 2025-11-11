@@ -10,6 +10,7 @@
 #endif
 
 #include "vfs_memory.h"
+#include "vfs_crypto.h"
 #include "log.h"
 #include <stdlib.h>
 #include <string.h>
@@ -345,6 +346,43 @@ static int vfs_load_file_from_disk(const char *file_path, const char *base_path)
 		return -1;
 	}
 
+	/* Check if file is encrypted (.bin extension) and decrypt if necessary */
+	size_t final_size = file_size;
+	char *final_content = content;
+	bool is_encrypted_file = false;
+
+	/* Check if file has .bin extension */
+	const char *ext = strrchr(file_path, '.');
+	if (ext && strcmp(ext, ".bin") == 0) {
+		is_encrypted_file = true;
+		LOG_DEBUG("VFS: Detected encrypted file: %s", file_path);
+
+		/* Try to decrypt if crypto is enabled */
+		if (vfs_crypto_is_enabled()) {
+			unsigned char *decrypted = NULL;
+			size_t decrypted_len = 0;
+
+			if (vfs_crypto_decrypt((unsigned char *)content, file_size,
+			                       &decrypted, &decrypted_len) == 0) {
+				/* Decryption successful */
+				LOG_INFO("VFS: Successfully decrypted file: %s (%zu -> %zu bytes)",
+				         file_path, file_size, decrypted_len);
+				
+				/* Replace content with decrypted data */
+				free(content);
+				final_content = (char *)decrypted;
+				final_size = decrypted_len;
+			} else {
+				/* Decryption failed */
+				LOG_WARNING("VFS: Failed to decrypt file: %s (will try to use as-is)", file_path);
+				/* Continue with original content */
+			}
+		} else {
+			LOG_WARNING("VFS: Encrypted file detected but crypto not enabled: %s", file_path);
+			/* Continue with original content */
+		}
+	}
+
 	/* Calculate virtual path (relative to base_path) */
 	const char *virtual_path = file_path;
 	if (base_path) {
@@ -365,16 +403,27 @@ static int vfs_load_file_from_disk(const char *file_path, const char *base_path)
 				rel_path++;
 			
 			/* Build virtual path as: dir_name/rel_path */
-			size_t vpath_len = strlen(dir_name) + strlen(rel_path) + 2;
+			/* If encrypted, remove .bin extension from virtual path */
+			char *vpath_rel = strdup(rel_path);
+			if (is_encrypted_file && vfs_crypto_is_enabled()) {
+				char *bin_ext = strstr(vpath_rel, ".bin");
+				if (bin_ext && bin_ext[4] == '\0') {
+					*bin_ext = '\0';  /* Remove .bin extension */
+				}
+			}
+			
+			size_t vpath_len = strlen(dir_name) + strlen(vpath_rel) + 2;
 			char *vpath = malloc(vpath_len);
 			if (vpath) {
-				snprintf(vpath, vpath_len, "%s/%s", dir_name, rel_path);
-				int result = vfs_memory_add_file(vpath, content, file_size);
+				snprintf(vpath, vpath_len, "%s/%s", dir_name, vpath_rel);
+				int result = vfs_memory_add_file(vpath, final_content, final_size);
 				free(vpath);
-				free(content);
+				free(vpath_rel);
+				free(final_content);
 				return result;
 			} else {
-				free(content);
+				free(vpath_rel);
+				free(final_content);
 				LOG_ERROR("Out of memory");
 				return -1;
 			}
@@ -382,8 +431,24 @@ static int vfs_load_file_from_disk(const char *file_path, const char *base_path)
 	}
 
 	/* Fallback: use file_path as is */
-	int result = vfs_memory_add_file(file_path, content, file_size);
-	free(content);
+	/* If encrypted, remove .bin extension from virtual path */
+	const char *vpath_to_use = file_path;
+	char *vpath_copy = NULL;
+	if (is_encrypted_file && vfs_crypto_is_enabled()) {
+		vpath_copy = strdup(file_path);
+		if (vpath_copy) {
+			char *bin_ext = strstr(vpath_copy, ".bin");
+			if (bin_ext && bin_ext[4] == '\0') {
+				*bin_ext = '\0';  /* Remove .bin extension */
+				vpath_to_use = vpath_copy;
+			}
+		}
+	}
+	
+	int result = vfs_memory_add_file(vpath_to_use, final_content, final_size);
+	free(final_content);
+	if (vpath_copy)
+		free(vpath_copy);
 
 	return result;
 }

@@ -16,6 +16,7 @@
 #include "log.h"
 #include "command.h"
 #include "vfs_memory.h"
+#include "vfs_crypto.h"
 
 #include <getopt.h>
 
@@ -37,6 +38,11 @@
 
 static int help_flag, version_flag;
 
+/* Option codes for long options without short equivalent */
+#define OPTION_CRYPTO_KEY     256
+#define OPTION_CRYPTO_KEY_ENV 257
+#define OPTION_CRYPTO_KEY_FILE 258
+
 static const struct option long_options[] = {
 	{"help",		no_argument,			&help_flag,		1},
 	{"version",		no_argument,			&version_flag,	1},
@@ -46,6 +52,9 @@ static const struct option long_options[] = {
 	{"log_output",	required_argument,		NULL,			'l'},
 	{"command",		required_argument,		NULL,			'c'},
 	{"directory-to-memory",	required_argument,		NULL,			'D'},
+	{"crypto-key",		required_argument,		NULL,			OPTION_CRYPTO_KEY},
+	{"crypto-key-env",	required_argument,		NULL,			OPTION_CRYPTO_KEY_ENV},
+	{"crypto-key-file",	required_argument,		NULL,			OPTION_CRYPTO_KEY_FILE},
 	{NULL, 0, NULL, 0}
 };
 
@@ -325,6 +334,27 @@ int parse_cmdline_args(struct command_context *cmd_ctx, int argc, char *argv[])
 				LOG_ERROR("Failed to load directory into memory: %s", optarg);
 				return ERROR_FAIL;
 			}
+			break;
+		case OPTION_CRYPTO_KEY:		/* --crypto-key <key> */
+			if (vfs_crypto_set_key_string(optarg, VFS_CRYPTO_AES_128_CBC) != 0) {
+				LOG_ERROR("Failed to set crypto key");
+				return ERROR_FAIL;
+			}
+			LOG_INFO("Crypto: Key set from command line (AES-128-CBC)");
+			break;
+		case OPTION_CRYPTO_KEY_ENV:		/* --crypto-key-env <env_var> */
+			if (vfs_crypto_set_key_env(optarg, VFS_CRYPTO_AES_128_CBC) != 0) {
+				LOG_ERROR("Failed to set crypto key from environment variable: %s", optarg);
+				return ERROR_FAIL;
+			}
+			LOG_INFO("Crypto: Key loaded from environment variable: %s", optarg);
+			break;
+		case OPTION_CRYPTO_KEY_FILE:	/* --crypto-key-file <file> */
+			if (vfs_crypto_set_key_file(optarg, VFS_CRYPTO_AES_128_CBC) != 0) {
+				LOG_ERROR("Failed to set crypto key from file: %s", optarg);
+				return ERROR_FAIL;
+			}
+			LOG_INFO("Crypto: Key loaded from file: %s", optarg);
 			break;
 		default:  /* '?' */
 			/* getopt will emit an error message, all we have to do is bail. */
